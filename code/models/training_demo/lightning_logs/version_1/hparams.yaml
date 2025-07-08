@@ -1,0 +1,29 @@
+model_params: !!python/object/new:ml4floods.models.utils.configuration.AttrDict
+  dictitems:
+    hyperparameters: !!python/object/new:ml4floods.models.utils.configuration.AttrDict
+      dictitems:
+        channel_configuration: all
+        early_stopping_patience: 4
+        label_names:
+        - land
+        - water
+        - cloud
+        lr: 0.0001
+        lr_decay: 0.5
+        lr_patience: 2
+        max_epochs: 10
+        max_tile_size: 256
+        metric_monitor: val_dice_loss
+        model_type: simplecnn
+        num_channels: 13
+        num_classes: 3
+        val_every: 1
+        weight_per_class:
+        - 1.93445299
+        - 36.60054169
+        - 2.19400729
+    model_folder: models
+    model_version: v1
+    test: false
+    train: true
+normalized_data: true
