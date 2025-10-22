@@ -1,5 +1,5 @@
 ---
-title: Project Specification for 2025 summer internsip
+title: Project Specification
 
 ---
 
@@ -7,8 +7,7 @@ title: Project Specification for 2025 summer internsip
 
 ### HAZAMA
 
-**Reconstruction of Historical Flood Extents Based on Synthetic Aperture Radar and Multi-Source Data Applications**
-
+**Combining multi-source remote sensing imagery and for reconstruction of spatio-temporal flood extent and depth database**
 
 ### Objectives
 
