@@ -7,11 +7,9 @@
 ### Project Structure
 HAZAMA/
 
-├── src/
-
-├── demos/
-
-├── docs/
+├── src/\
+├── demos/\
+├── docs/\
 
 # Resources
 
