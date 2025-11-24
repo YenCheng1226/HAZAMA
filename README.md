@@ -2,7 +2,7 @@
 
 ### HAZAMA
 
-**Combining multi-source remote sensing imagery and for reconstruction of spatio-temporal flood extent and depth database**
+**Combining multi-source remote sensing imagery for reconstruction of spatio-temporal flood extent and depth database**
 
 ### Project Structure
 HAZAMA/
