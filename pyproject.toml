@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hadis"
+version = "0.1.0"
+authors = [
+  { name="Your Name", email="your@email.com" }, # TODO: Update with actual author info
+]
+description = "Holistic Automated Disaster Intelligence System (HADIS)"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+# Core dependencies for your HADIS application
+dependencies = [
+    # "numpy",
+    # "pandas",
+    # "xarray",
+    # "geopandas",
+    # "rasterio",
+    # "scikit-learn",
+    # "tensorflow" # Or "pytorch" if preferred
+    # Add other core dependencies here
+]
+
+[project.scripts]
+hadis-cli = "src.cli.main:app" # Assuming src/cli/main.py has an 'app' entry point
+
+[project.optional-dependencies]
+dev = [
+    # "uv", # uv is typically installed globally, but listed here for documentation
+    "ipykernel", # For Jupyter notebooks
+    "ruff", # Linter
+    "black", # Formatter
+    "pre-commit",
+]
+test = [
+    "pytest",
+    "pytest-cov",
+    # Add other testing dependencies here
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+# Ruff configuration (example)
+line-length = 88
+target-version = "py38"
+
+[tool.black]
+# Black configuration (example)
+line-length = 88
