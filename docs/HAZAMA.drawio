@@ -1,0 +1,43 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15" version="29.3.0">
+  <diagram name="第 1 页" id="PLdsjypOPV6bhk35zavn">
+    <mxGraphModel dx="972" dy="664" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="0nCQy5p63_Nm8nfP06S--8" edge="1" parent="1" source="0nCQy5p63_Nm8nfP06S--1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" target="0nCQy5p63_Nm8nfP06S--6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="0nCQy5p63_Nm8nfP06S--1" parent="1" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.database;whiteSpace=wrap;" value="Copernicus" vertex="1">
+          <mxGeometry height="60" width="80" x="350" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="0nCQy5p63_Nm8nfP06S--5" edge="1" parent="1" source="0nCQy5p63_Nm8nfP06S--3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="0nCQy5p63_Nm8nfP06S--4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="0nCQy5p63_Nm8nfP06S--3" parent="1" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.multi-document;whiteSpace=wrap;" value="Flood Event Data" vertex="1">
+          <mxGeometry height="60" width="88" x="40" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="0nCQy5p63_Nm8nfP06S--7" edge="1" parent="1" source="0nCQy5p63_Nm8nfP06S--4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="0nCQy5p63_Nm8nfP06S--6" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="0nCQy5p63_Nm8nfP06S--4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;" value="Geo-encoding and Time Window Extraction" vertex="1">
+          <mxGeometry height="60" width="158" x="180" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="0nCQy5p63_Nm8nfP06S--13" edge="1" parent="1" source="0nCQy5p63_Nm8nfP06S--6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="0nCQy5p63_Nm8nfP06S--12" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="0nCQy5p63_Nm8nfP06S--6" parent="1" style="whiteSpace=wrap;html=1;rounded=1;strokeWidth=2;" value="Satellite Imagery Acquisition" vertex="1">
+          <mxGeometry height="50" width="161" x="390" y="265" as="geometry" />
+        </mxCell>
+        <mxCell id="0nCQy5p63_Nm8nfP06S--10" edge="1" parent="1" source="0nCQy5p63_Nm8nfP06S--9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="0nCQy5p63_Nm8nfP06S--6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="0nCQy5p63_Nm8nfP06S--9" parent="1" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.database;whiteSpace=wrap;" value="Google Earth Engine" vertex="1">
+          <mxGeometry height="60" width="141" x="490" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="0nCQy5p63_Nm8nfP06S--12" parent="1" style="whiteSpace=wrap;html=1;rounded=1;strokeWidth=2;" value="Validation" vertex="1">
+          <mxGeometry height="60" width="120" x="620" y="260" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
