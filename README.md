@@ -5,11 +5,8 @@
 **Combining multi-source remote sensing imagery for reconstruction of spatio-temporal flood extent and depth database**
 
 ### Project Structure
-HAZAMA/
 
-├── src/\
-├── demos/\
-├── docs/\
+(not yet)
 
 # Resources
 
