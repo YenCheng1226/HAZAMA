@@ -5,3 +5,4 @@ src/HAZAMA.egg-info/SOURCES.txt
 src/HAZAMA.egg-info/dependency_links.txt
 src/HAZAMA.egg-info/requires.txt
 src/HAZAMA.egg-info/top_level.txt
+tests/test_test.py

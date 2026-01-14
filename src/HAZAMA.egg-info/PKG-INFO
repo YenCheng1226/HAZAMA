@@ -23,6 +23,7 @@ Requires-Dist: pre-commit; extra == "dev"
 Provides-Extra: test
 Requires-Dist: pytest>=7.0; extra == "test"
 Requires-Dist: pytest-cov; extra == "test"
+Requires-Dist: pytest-mock; extra == "test"
 
 # Overview
 
