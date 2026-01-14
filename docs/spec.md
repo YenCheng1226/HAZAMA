@@ -95,3 +95,33 @@ graph TD;
 1. Install: `uv sync --all-extras`
 2. Run check: `uv run ruff check .`
 3. Run tests: `uv run pytest`
+
+# 8. Develop Workflow
+
+1. create new branch for individual feature (e.g. feature/ingestion)
+	```
+	git checkout -b feature/ingestion
+	uv sync
+	```
+2. wite tests
+	```
+	import pytest
+	from src.ingestion import parse_event_csv
+
+	def test_parse_valid_csv(tmp_path):
+    # create a test CSV file
+    d = data/test/"test.csv"
+    d.write_text("event_id,start_date,end_date,bbox\nE001,2023-01-01,2023-01-05,'[120, 23, 121, 24]'")
+    
+    events = parse_event_csv(str(d))
+    assert len(events) == 1
+    assert events[0]['event_id'] == "E001"
+	```
+3. develop
+	self check
+	```
+	uv run ruff format . 
+	uv run ruff check --fix .
+	```
+4. uv run pytest
+5. Pull Request(PR)
