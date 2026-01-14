@@ -125,3 +125,8 @@ graph TD;
 	```
 4. uv run pytest
 5. Pull Request(PR)
+```
+git add .
+git commit -m "..."
+git push origin feature/setup-guide
+```
