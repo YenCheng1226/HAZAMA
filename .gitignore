@@ -1,7 +1,15 @@
-# Google Earth Engine Service Account Key
-global-flood-mapping-db762f1c1e40.json
+# Outputs
+outputs/*
+!outputs/.gitkeep
 
-# Python
+# Data
+data/*
+!data/.gitkeep
+
+# API keys
+credentials.json
+
+# Python and virtual environment
 __pycache__/
 *.pyc
 *.pyo

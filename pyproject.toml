@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "hadis"
+name = "HAZAMA"
 version = "0.1.0"
 authors = [
   { name="Your Name", email="your@email.com" }, # TODO: Update with actual author info
@@ -16,7 +16,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-# Core dependencies for your HADIS application
+# Core dependencies
 dependencies = [
     # "numpy",
     # "pandas",
