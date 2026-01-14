@@ -89,3 +89,9 @@ graph TD;
 	End -- No --> Loop;
 	End -- Yes --> Stop([Stop]);
 ```
+
+# 7. Environment Setup
+
+1. Install: `uv sync --all-extras`
+2. Run check: `uv run ruff check .`
+3. Run tests: `uv run pytest`

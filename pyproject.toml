@@ -8,51 +8,54 @@ version = "0.1.0"
 authors = [
   { name="Your Name", email="your@email.com" }, # TODO: Update with actual author info
 ]
-description = "Holistic Automated Disaster Intelligence System (HADIS)"
+description = "Flood Event Intelligent Information Acquisition System"
 readme = "README.md"
-requires-python = ">=3.8"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-]
-# Core dependencies
+requires-python = ">=3.10"
+license = {text = "MIT"}
 dependencies = [
-    # "numpy",
-    # "pandas",
-    # "xarray",
-    # "geopandas",
-    # "rasterio",
-    # "scikit-learn",
-    # "tensorflow" # Or "pytorch" if preferred
-    # Add other core dependencies here
+    "numpy>=1.26.0",
+    "xarray>=0.26.0",
+    "rioxarray>=0.14.0",
+    "matplotlib.pyplot",
+    "pystac-client>=0.7.0",
+    "earthengine-api>=0.1.350",
+    "pandas>=2.0.0",
+    "geopandas>=0.14.0",
+    "python-dotenv", # API Keys
 ]
-
-[project.scripts]
-hadis-cli = "src.cli.main:app" # Assuming src/cli/main.py has an 'app' entry point
 
 [project.optional-dependencies]
 dev = [
-    # "uv", # uv is typically installed globally, but listed here for documentation
-    "ipykernel", # For Jupyter notebooks
-    "ruff", # Linter
-    "black", # Formatter
+    "uv",
+    "ruff>=0.1.0",
+    "ipykernel",
     "pre-commit",
 ]
 test = [
-    "pytest",
+    "pytest>=7.0",
     "pytest-cov",
-    # Add other testing dependencies here
 ]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.ruff]
-# Ruff configuration (example)
 line-length = 88
-target-version = "py38"
+target-version = "py310"
 
-[tool.black]
-# Black configuration (example)
-line-length = 88
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # Pyflakes
+    "I",   # isort (自動排序 imports)
+    "UP",  # pyupgrade (強迫使用新語法)
+    "N",   # pep8-naming (規範變數命名)
+    "B",   # flake8-bugbear (檢查邏輯坑)
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
