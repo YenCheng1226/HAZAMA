@@ -26,18 +26,17 @@ Requires-Dist: pytest-cov; extra == "test"
 
 # Overview
 
-### HAZAMA
+## HAZAMA
 
-**Combining multi-source remote sensing imagery for reconstruction of spatio-temporal flood extent and depth database**
+**HAZAMA, a scalable satellite-based platform for global flood hazard assessment that integrates multi-
+source Earth observation data, advanced data-driven methods, and uncertainty-aware analysis
+to support both scientific research and practical flood hazard applications under a changing
+climate.**
 
-### Project Structure
-
-(not yet)
-
-# Resources
+## Resources
 
 ### Slides
-https://docs.google.com/presentation/d/1sLopNjr3TdTDjE2u11mk9vXsgPQm07Gr2cjEPIDE3BM/edit?usp=sharing
+https://docs.google.com/presentation/d/1IftdSCA70PMPZnFkhHU9nuh_z7nl_ruuAczWLiz6xlc/edit?usp=sharing
 
 ### Google drive
 https://drive.google.com/drive/folders/1Y34PzrjlTWpENcRUFSVVVylxa8NOC-7e?usp=sharing

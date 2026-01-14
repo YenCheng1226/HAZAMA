@@ -40,6 +40,17 @@ test = [
 where = ["src"]
 
 [tool.ruff]
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "data",
+    "outputs",
+    "demos",
+]
+
 line-length = 88
 target-version = "py310"
 
