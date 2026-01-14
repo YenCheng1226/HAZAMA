@@ -16,7 +16,7 @@ dependencies = [
     "numpy>=1.26.0",
     "xarray>=0.26.0",
     "rioxarray>=0.14.0",
-    "matplotlib.pyplot",
+    "matplotlib",
     "pystac-client>=0.7.0",
     "earthengine-api>=0.1.350",
     "pandas>=2.0.0",
