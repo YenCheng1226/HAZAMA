@@ -98,6 +98,12 @@ graph TD;
 
 # 8. Develop Workflow
 
+first checkout main branch!
+```
+git checkout main
+git pull origin main
+```
+
 1. create new branch for individual feature (e.g. feature/ingestion)
 	```
 	git checkout -b feature/ingestion

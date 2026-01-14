@@ -4,14 +4,7 @@
 
 ## Task Assignments
 
-### Yen-Cheng
+### members
 
 ### 
-
-checkout main branch and fetch first!
-```
-git checkout main
-git pull origin main
-```
-
 
