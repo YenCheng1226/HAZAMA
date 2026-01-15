@@ -1,9 +1,12 @@
 import os
 from dotenv import load_dotenv
 from pystac_client import Client
+import logging
 import pandas as pd
 
-# 1. 讀取環境變數
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("CDSE_Fetcher")
+
 load_dotenv()
 os.environ["AWS_ACCESS_KEY_ID"] = os.getenv("CDSE_S3_ACCESS_KEY", "")
 os.environ["AWS_SECRET_ACCESS_KEY"] = os.getenv("CDSE_S3_SECRET_KEY", "")
@@ -52,6 +55,7 @@ def process_event_for_cdse(event_id, bbox, date_range):
         items = search_satellite_data(bbox, date_range)
         
         if not items:
+            logger.warning(f"[NO_DATA_FOUND] Event {event_id} in bbox {bbox} has no imagery.")
             results_entry["status"] = "NO_IMAGE"
             return results_entry
             
@@ -84,11 +88,11 @@ def process_event_for_cdse(event_id, bbox, date_range):
         results_entry["status"] = "SUCCESS"
     except Exception as e:
         results_entry["status"] = "API_ERROR"
-        print(f"Error processing {event_id}: {e}")
+        logger.error(f"處理事件 {event_id} 時發生意外: {e}")
         
     return results_entry
 
-def run_main_task(event_list):
+def CDSE(event_list):
     all_results = [] # 將CDSE的尋找結果存在list中
 
     for event in event_list:
@@ -100,10 +104,10 @@ def run_main_task(event_list):
         post_days = event['post_event_days']
         event_date = start_date + "/" + end_date
 
-        # 2. 呼叫 CDSE Function 取得新資料
+        # 執行 CDSE 資料搜尋
         cdse_data = process_event_for_cdse(event_id, event['bbox'], event_date)
     
-        # 3. 合併 (Merge)
+        # 最終Output
         full_entry = {
             **cdse_data, # event_id, metadata, cloud_coverage, status, path
             "pre-event days": pre_days,
