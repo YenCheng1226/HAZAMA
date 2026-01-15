@@ -4,9 +4,18 @@
 
 ## Task Assignments
 
-### members
+### member
 
-### members
+develop `fetch_GEE.py`
 
-### members
+### member
 
+develop `fetch_CDSE.py`
+
+### member
+
+develop `ingestion.py`
+
+### member
+
+analyze flood events in Guatemala, collect satellite images of those events
