@@ -1,14 +1,3 @@
-import pytest
-from src.ingestion import parse_event_csv
-
-def test_parse_valid_csv(tmp_path):
-# create a test CSV file
-    d = data/test/"test.csv"
-    d.write_text("event_id,start_date,end_date,bbox\nE001,2023-01-01,2023-01-05,'[120, 23, 121, 24]'")
-    events = parse_event_csv(str(d))
-    assert len(events) == 1
-    assert events[0]['event_id'] == "E001"
-
 import os
 from dotenv import load_dotenv
 from pystac_client import Client
@@ -74,14 +63,24 @@ def process_event_for_cdse(event_id, bbox, date_range):
         results_entry["cloud_coverage"] = best_item.properties.get("eo:cloud_cover")
         # 處理 Path
         # 取得 S3 上的原始影像連結 ex.B04
-        s3_url = best_item.assets.get("B04", {}).get("href") # 可能要選特定波段，這裡可以拿到暫存的 S3 連結
+        # 可能要選特定波段，這裡可以拿到暫存的 S3 連結
+        # 嘗試多種可能的 Asset Key
+        asset_keys = ["rendered_preview", "thumbnail", "visual", "B04"]
+        for key in asset_keys:
+            asset = best_item.assets.get(key)
+            if asset and asset.href:
+                results_entry["path"] = asset.href
+                break
+        
+        # 如果還是 None，印出所有可用的 Key 供除錯
+        if results_entry["path"] is None:
+            print(f"警告：找不到預期資產。可用資產為: {list(best_item.assets.keys())}")
         
         # 2. [待處理] 呼叫裁切並存成 COG 的 function
         # local_cog_path = save_as_local_cog(s3_url, event_id, bbox)
         # results_entry["path"] = local_cog_path
         
         # 暫時先放 S3 連結
-        results_entry["path"] = s3_url 
         results_entry["status"] = "SUCCESS"
     except Exception as e:
         results_entry["status"] = "API_ERROR"
