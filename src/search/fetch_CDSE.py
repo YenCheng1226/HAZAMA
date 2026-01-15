@@ -27,7 +27,7 @@ def search_satellite_data(bbox, date_range, collection="sentinel-2-l2a"):
     """
     catalog = get_stac_client()
     
-    # 建立搜尋過濾條件
+    # 建立搜尋條件
     search = catalog.search(
         collections = [collection],
         bbox = bbox,
@@ -63,7 +63,7 @@ def process_event_for_cdse(event_id, bbox, date_range):
         best_item = items[0]
         
         # 填充資料
-        results_entry["metadata"] = str(best_item.properties) # 轉成字串存入 CSV
+        results_entry["metadata"] = str(best_item.properties) 
         results_entry["cloud_coverage"] = best_item.properties.get("eo:cloud_cover")
         # 處理 Path
         # 取得 S3 上的原始影像連結 ex.B04
