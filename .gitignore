@@ -19,4 +19,4 @@ venv/
 .env
 .env.local
 
-test_cdse_final.py
+tests/test_cdse_final.py
