@@ -27,24 +27,17 @@ def get_stac_client():
 
 DEFAULT_BBOX = [121.501, 25.045, 121.515, 25.055] # [西, 南, 東, 北] 台北101
 
-def get_corrected_window(src, bbox_wgs84):
-    # bbox_wgs84 是經緯度格式 需要轉換為影像座標系
-    left, bottom, right, top = transform_bounds("EPSG:4326", src.crs, *bbox_wgs84)
-    return from_bounds(left, bottom, right, top, transform=src.transform)
-
-def save_as_cog(item, bbox, event_id, output_dir="data/output_cogs", assets_to_download="B04"):
+def save_as_cog(item, bbox_wgs84, event_id, output_dir, band):
+    """將 STAC Item 的指定波段存為 COG 格式"""
+    asset = item.assets.get(band)
+    if not asset:
+        return None
     
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    s3_url = asset.href
+    date_str = item.datetime.strftime("%Y%m%d")
+    unique_filename = f"{event_id}_{item.id}_{date_str}_{band}.tif"
+    local_path = os.path.join(output_dir, unique_filename)
 
-    for asset_key in assets_to_download:
-        s3_url = item.assets.get(asset_key, {}).get("href")
-        if not s3_url: continue
-
-        date_str = item.datetime.strftime("%Y%m%d")
-        filename = f"{event_id}_{date_str}_{asset_key}.tif"
-        local_path = os.path.join(output_dir, filename)
-    
     try:
         session = boto3.Session(
             aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
@@ -53,13 +46,12 @@ def save_as_cog(item, bbox, event_id, output_dir="data/output_cogs", assets_to_d
         
         with rasterio.Env(AWSSession(session)):
             with rasterio.open(s3_url) as src:
-                # 確認 bbox 格式為 [西, 南, 東, 北]
-                window = from_bounds(*bbox, transform=src.transform)
+                # 座標轉換
+                left, bottom, right, top = transform_bounds("EPSG:4326", src.crs, *bbox_wgs84)
+                window = from_bounds(left, bottom, right, top, transform=src.transform)
                 
-                # 讀取指定範圍
                 data = src.read(window=window)
                 
-                # COG 轉換設定
                 profile = src.profile.copy()
                 profile.update({
                     'driver': 'GTiff',
@@ -72,115 +64,108 @@ def save_as_cog(item, bbox, event_id, output_dir="data/output_cogs", assets_to_d
                     'compress': 'deflate'
                 })
                 
-                # 寫入本地 COG
                 with rasterio.open(local_path, 'w', **profile) as dst:
                     dst.write(data)
                     
         return os.path.abspath(local_path)
     except Exception as e:
-        logger.error(f"COG 轉換失敗: {e}")
+        logger.error(f"COG 轉換失敗 ({band}): {e}")
         return None
 
-def search_satellite_data(bbox, date_range, collection="sentinel-2-l2a"):
-    """
-    param bbox: [西, 南, 東, 北] 經緯度列表
-    param date_range: "YYYY-MM-DD/YYYY-MM-DD"
-    param collection: 衛星種類，例如 'sentinel-2-l2a' 或 'sentinel-1-grd'
-    param max_cloud: 最大雲覆蓋率 (0-100) 還沒加上
-    """
-    catalog = get_stac_client()
-
-    # 建立搜尋條件
-    search = catalog.search(
-        collections=[collection],
-        bbox=bbox,
-        datetime=date_range,
-        # query={"eo:cloud_cover":
-        #  {"lt": max_cloud}} if "sentinel-2" in collection else None
-    )
-
-    items = search.item_collection()
-    print(f"找到 {len(items)} 筆符合條件的影像")
-
-    return items
-
-
-def process_event_for_cdse(event_id, bbox, date_range,base_output_dir="data/output_images"):
-
+def process_event_for_cdse(event_id, bbox, date_range, collection, bands, base_output_dir):
+   
     event_folder = os.path.join(base_output_dir, event_id)
     if not os.path.exists(event_folder):
         os.makedirs(event_folder)
-    bbox = bbox or DEFAULT_BBOX
-    event_images_results = {
+
+    actual_bbox = bbox if bbox else DEFAULT_BBOX
+
+    results = {
         "event_id": event_id,
         "metadata": [],
         "cloud_coverage": [],
         "path": os.path.abspath(event_folder),
         "status": "PENDING"
     }
-        
 
     try:
-        # 執行 STAC 搜尋
         catalog = get_stac_client()
-        search = catalog.search(collections=["sentinel-2-l2a"], bbox=bbox, datetime=date_range)
+        search = catalog.search(collections=[collection], bbox=actual_bbox, datetime=date_range)
         items = search.item_collection()
 
-        # 填充資料
         if not items:
-            logger.warning(f"[NO_DATA_FOUND] Event {event_id} in bbox {bbox} has no imagery.")
-            event_images_results["status"] = "NO_IMAGE"
-            return event_images_results
+            logger.warning(f"[NO_DATA_FOUND] Event {event_id} has no imagery.")
+            results["status"] = "NO_IMAGE"
+            return results
         
         success_count = 0
         for item in items:
-            local_path = save_as_cog(item, bbox, event_id, output_dir=event_folder)
-            if local_path:
+            # 支援多波段儲存 (Sen-1: VV, VH; Sen-2: B04...)
+            band_success = False
+            for band in bands:
+                local_path = save_as_cog(item, actual_bbox, event_id, event_folder, band)
+                if local_path:
+                    band_success = True
+            
+            if band_success:
                 success_count += 1
-                event_images_results["metadata"].append(item.id)
-                event_images_results["cloud_coverage"].append(item.properties.get("eo:cloud_cover"))
+                results["metadata"].append(item.id)
+                # Sen-1 沒有雲量，需安全讀取
+                cloud = item.properties.get("eo:cloud_cover")
+                if cloud is not None:
+                    results["cloud_coverage"].append(cloud)
+
         if success_count > 0:
-            event_images_results["status"] = "SUCCESS"
-            event_images_results["metadata"] = ", ".join(event_images_results["metadata"])
+            results["status"] = "SUCCESS"
+            results["metadata"] = ", ".join(results["metadata"])
         else:
-            event_images_results["status"] = "NO_IMAGE"
+            results["status"] = "NO_IMAGE"
+
     except Exception as e:
-        logger.error(f"搜尋事件 {event_id} 時發生錯誤: {e}")
-        event_images_results["status"] = "API_ERROR"
-    return event_images_results
+        logger.error(f"處理事件 {event_id} 失敗: {e}")
+        results["status"] = "API_ERROR"
         
+    return results
 
-
-def cdse(event_list):
-    all_results = []  # 將CDSE的尋找結果存在list中
+def cdse(event_list, collection="sentinel-2-l2a", bands=["B04"], base_dir="data/output_images"):
+    
+    all_results = []
 
     for event in event_list:
-        # event_list 是ingestion.py讀取的事件清單
         event_id = event["id"]
+        # 時間窗口計算
         start_dt = datetime.strptime(event["start_date"], "%Y-%m-%d")
         end_dt = datetime.strptime(event["end_date"], "%Y-%m-%d")
         full_start = start_dt - timedelta(days=int(event["pre_event_days"]))
         full_end = end_dt + timedelta(days=int(event["post_event_days"]))
-        pre_days = event["pre_event_days"]
-        post_days = event["post_event_days"]
-        event_date = full_start.strftime("%Y-%m-%d") + "/" + full_end.strftime("%Y-%m-%d")
+        
+        event_date_range = f"{full_start.strftime('%Y-%m-%d')}/{full_end.strftime('%Y-%m-%d')}"
 
-        # 執行 CDSE 資料搜尋
-        cdse_data = process_event_for_cdse(event_id, event["bbox"], event_date)
+        # 執行 CDSE 任務
+        cdse_data = process_event_for_cdse(
+            event_id, 
+            event.get("bbox"), 
+            event_date_range, 
+            collection, 
+            bands, 
+            base_dir
+        )
 
-        # 最終Output
+        # 整理輸出格式
         full_entry = {
             "event_id": cdse_data["event_id"],
             "metadata": cdse_data["metadata"],
             "pre-event days": event["pre_event_days"],
             "post-event days": event["post_event_days"],
-            "cloud_coverage": round(sum(cdse_data["cloud_coverage"])/len(cdse_data["cloud_coverage"]), 2)
-              if cdse_data["cloud_coverage"] else 0,
+            "cloud_coverage": round(sum(cdse_data["cloud_coverage"])/len(cdse_data["cloud_coverage"]), 2) 
+                              if cdse_data["cloud_coverage"] else 0,
             "path": cdse_data["path"],
             "status": cdse_data["status"]
         }
-
         all_results.append(full_entry)
+
+    # 產出 CSV
+    os.makedirs("data", exist_ok=True)
     df = pd.DataFrame(all_results)
     df.to_csv("data/results.csv", index=False)
-    print("CSV 儲存完畢！")
+    logger.info("CSV 已儲存至 data/results.csv")
