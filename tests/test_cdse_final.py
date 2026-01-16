@@ -6,7 +6,7 @@ from src.search.fetch_CDSE import DEFAULT_BBOX, cdse
 
 
 # --- 測試資料準備 ---
-@pytest.mark.skip(reason="data資料夾尚未建立，暫時跳過")
+
 @pytest.fixture
 def mock_events():
     return [
@@ -77,6 +77,7 @@ def test_sentinel_1_multi_band_call(mock_save, mock_stac, mock_events):
 
 
 # --- 核心測試 4：CSV 產出格式驗證 ---
+@pytest.mark.skip(reason="data資料夾尚未建立，暫時跳過")
 @patch("src.search.fetch_CDSE.process_event_for_cdse")
 def test_csv_output_generation(mock_process, tmp_path):
     # 模擬處理後的結果
