@@ -4,6 +4,7 @@ import boto3
 import rasterio
 import pandas as pd
 from datetime import datetime, timedelta
+from rasterio.vrt import WarpedVRT
 from dotenv import load_dotenv
 from pystac_client import Client
 from rasterio.session import AWSSession
@@ -16,7 +17,7 @@ logger = logging.getLogger("CDSE_Fetcher")
 
 load_dotenv()
 
-DEFAULT_BBOX = [121.56, 25.03, 121.57, 25.04] # 確定成功的台北 101 座標
+DEFAULT_BBOX = [121.56, 25.03, 121.57, 25.04] # 台北 101 座標
 
 def get_stac_client():
     return Client.open("https://catalogue.dataspace.copernicus.eu/stac")
@@ -33,9 +34,9 @@ def save_as_cog(item, bbox_wgs84, event_id, output_dir, band):
     
     s3_url = asset.href.replace("https://eodata.dataspace.copernicus.eu/", "/vsis3/eodata/")
     date_str = item.datetime.strftime("%Y%m%d")
-    unique_filename = f"{event_id}_{item.id}_{date_str}_{band}.tif"
+    unique_filename = f"{event_id}_{date_str}_{band}.tif"
     local_path = os.path.join(output_dir, unique_filename)
-
+    is_s1 = "sentinel-1" in item.collection_id.lower()
     try:
         session = boto3.Session(
             aws_access_key_id=access_key,
@@ -50,33 +51,64 @@ def save_as_cog(item, bbox_wgs84, event_id, output_dir, band):
             GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR" 
         ):
             with rasterio.open(s3_url) as src:
-                # 執行座標轉換
-                left, bottom, right, top = transform_bounds("EPSG:4326", src.crs, *bbox_wgs84)
-                window = from_bounds(left, bottom, right, top, transform=src.transform)
-                
-                # 讀取數據
-                data = src.read(window=window)
-                
-                # 設定設定檔
-                profile = src.profile.copy()
-                profile.update({
-                    'driver': 'GTiff',
-                    'height': window.height,
-                    'width': window.width,
-                    'transform': rasterio.windows.transform(window, src.transform),
-                    'tiled': True,
-                    'compress': 'deflate'
-                })
-                
-                with rasterio.open(local_path, 'w', **profile) as dst:
-                    dst.write(data)
-                    
+                # --- 關鍵修正：針對 S1 使用 WarpedVRT ---
+                # 這會將影像在讀取時即時投影到 WGS84
+                with WarpedVRT(src, dst_crs="EPSG:4326") as vrt:
+                    target_crs = vrt.crs
+                    try:
+                        # 1. 取得影像本身的邊界 (WGS84)
+                        t_left, t_bottom, t_right, t_top = transform_bounds("EPSG:4326", target_crs, *bbox_wgs84)
+                        img_left, img_bottom, img_right, img_top = vrt.bounds
+                        
+                        # 2. 計算交集範圍 (Intersection)
+                        # 只取兩者重疊的部分
+                        inter_left = max(img_left, t_left)
+                        inter_bottom = max(img_bottom, t_bottom)
+                        inter_right = min(img_right, t_right)
+                        inter_top = min(img_top, t_top)
+                        logger.info(f"🔍 影像範圍: {vrt.bounds}")
+                        logger.info(f"🔍 目標範圍: {bbox_wgs84}")
+                        # 3. 檢查是否有實質交集
+                        if inter_left >= inter_right or inter_bottom >= inter_top:
+                            logger.warning(f"影像 {item.id} 與目標區域無重疊")
+                            return None
+
+                        # 4. 使用交集範圍計算 window
+                        window = from_bounds(inter_left, inter_bottom, inter_right, inter_top, transform=vrt.transform)
+        
+                        # 再次安全檢查
+                        if window.width < 1 or window.height < 1:
+                            logger.error(f"計算出的視窗無效 (w={window.width}, h={window.height})")
+                            return None
+
+                        logger.info(f"正在下載裁切區域: {int(window.width)}x{int(window.height)}")
+                        data = vrt.read(window=window)
+                        
+                        # 更新 Profile
+                        profile = vrt.profile.copy()
+                        profile.update({
+                            'driver': 'GTiff',
+                            'height': data.shape[1],
+                            'width': data.shape[2],
+                            'transform': rasterio.windows.transform(window, vrt.transform),
+                            'tiled': True,
+                            'compress': 'deflate',
+                            'crs': "EPSG:4326"
+                        })
+                        
+                        with rasterio.open(local_path, 'w', **profile) as dst:
+                            dst.write(data)
+                            
+                    except Exception as e:
+                        logger.error(f"{band} 裁切失敗: {e}")
+                        return None
+                        
         return os.path.abspath(local_path)
     except Exception as e:
-        logger.error(f"下載失敗 {band}: {e}")
+        logger.error(f"讀取 S1 失敗: {e}")
         return None
 
-def process_event_for_cdse(event_id, bbox, date_range, collection="sentinel-2-l2a", bands=["B04_10m"]):
+def process_event_for_cdse(event_id, bbox, date_range, collection, bands, base_output_dir):
     base_output_dir = "data/output_images"
     event_folder = os.path.join(base_output_dir, event_id)
     if not os.path.exists(event_folder): os.makedirs(event_folder)
@@ -95,7 +127,6 @@ def process_event_for_cdse(event_id, bbox, date_range, collection="sentinel-2-l2
         catalog = get_stac_client()
         search = catalog.search(collections=[collection], bbox=actual_bbox, datetime=date_range)
         
-        # --- 關鍵修正：使用 list(search.items()) 確保抓到資料 ---
         items = list(search.items())
 
         if not items:
@@ -139,7 +170,7 @@ def cdse(event_list, collection="sentinel-2-l2a", bands=["B04_10m"], base_dir="d
         full_end = end_dt + timedelta(days=int(event["post_event_days"]))
         date_range = f"{full_start.strftime('%Y-%m-%d')}/{full_end.strftime('%Y-%m-%d')}"
 
-        res = process_event_for_cdse(event["id"], event.get("bbox"), date_range)
+        res = process_event_for_cdse(event["id"], event.get("bbox"), date_range, collection, bands, base_dir)
         
         # 合併輸出
         all_results.append({
