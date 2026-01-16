@@ -18,5 +18,3 @@ __pycache__/
 venv/
 .env
 .env.local
-
-tests/test_cdse_final.py
