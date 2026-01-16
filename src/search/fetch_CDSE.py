@@ -227,5 +227,5 @@ def cdse(
     output_path = "data/results.csv"
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df = pd.DataFrame(all_results)
-    df.to_csv(output_path, index=False)
+    #df.to_csv(output_path, index=False)
     logger.info("CSV 已更新！")
